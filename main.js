@@ -1,13 +1,11 @@
 /* ════════════════════════════════════════════
    CoreSetup Studio — main.js
-   ULTIMATE EDITION
+   ULTIMATE v2 · Fixed Globe (Additive Blending)
 ════════════════════════════════════════════ */
 
 document.body.classList.add('loading');
 
-/* ──────────────────────────────────────────
-   PRELOADER — animated counter + reveal
-────────────────────────────────────────── */
+/* ── PRELOADER ── */
 (function preloader() {
   const pre     = document.getElementById('preloader');
   const fill    = document.getElementById('preFill');
@@ -15,12 +13,11 @@ document.body.classList.add('loading');
   let p = 0;
 
   const tick = setInterval(() => {
-    /* natural-feeling loading curve */
     const step = p < 60 ? 3 + Math.random() * 5
                : p < 85 ? 1 + Math.random() * 3
                : 0.5 + Math.random() * 1.5;
     p = Math.min(p + step, 100);
-    fill.style.width  = p + '%';
+    fill.style.width = p + '%';
     percent.textContent = Math.floor(p) + '%';
 
     if (p >= 100) {
@@ -34,23 +31,16 @@ document.body.classList.add('loading');
   }, 60);
 })();
 
-/* ──────────────────────────────────────────
-   NAV
-────────────────────────────────────────── */
+/* ── NAV ── */
 const nav    = document.getElementById('nav');
 const burger = document.getElementById('burger');
-
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('stuck', window.scrollY > 60);
-});
+window.addEventListener('scroll', () => nav.classList.toggle('stuck', window.scrollY > 60));
 burger.addEventListener('click', () => nav.classList.toggle('open'));
 document.querySelectorAll('.nav-links a').forEach(a =>
   a.addEventListener('click', () => nav.classList.remove('open'))
 );
 
-/* ──────────────────────────────────────────
-   SCROLL REVEAL
-────────────────────────────────────────── */
+/* ── SCROLL REVEAL ── */
 const ro = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
@@ -58,9 +48,7 @@ const ro = new IntersectionObserver(entries => {
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
 
-/* ──────────────────────────────────────────
-   COUNT UP
-────────────────────────────────────────── */
+/* ── COUNT UP ── */
 const co = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (!e.isIntersecting) return;
@@ -77,23 +65,16 @@ const co = new IntersectionObserver(entries => {
 }, { threshold: 0.7 });
 document.querySelectorAll('.count').forEach(el => co.observe(el));
 
-/* ──────────────────────────────────────────
-   FAQ ACCORDION
-────────────────────────────────────────── */
+/* ── FAQ ACCORDION ── */
 document.querySelectorAll('.faq-item').forEach(item => {
   const q = item.querySelector('.faq-q');
   const a = item.querySelector('.faq-a');
-
   q.addEventListener('click', () => {
     const isOpen = item.classList.contains('open');
-
-    /* close all */
     document.querySelectorAll('.faq-item.open').forEach(other => {
       other.classList.remove('open');
       other.querySelector('.faq-a').style.maxHeight = null;
     });
-
-    /* open clicked (if it was closed) */
     if (!isOpen) {
       item.classList.add('open');
       a.style.maxHeight = a.scrollHeight + 'px';
@@ -101,9 +82,7 @@ document.querySelectorAll('.faq-item').forEach(item => {
   });
 });
 
-/* ──────────────────────────────────────────
-   SMOOTH ANCHOR
-────────────────────────────────────────── */
+/* ── SMOOTH ANCHOR ── */
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     const t = document.querySelector(a.getAttribute('href'));
@@ -111,9 +90,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-/* ──────────────────────────────────────────
-   CONTACT FORM
-────────────────────────────────────────── */
+/* ── CONTACT FORM ── */
 document.getElementById('contactForm').addEventListener('submit', e => {
   e.preventDefault();
   const msg = document.getElementById('formMsg');
@@ -122,9 +99,7 @@ document.getElementById('contactForm').addEventListener('submit', e => {
   e.target.reset();
 });
 
-/* ──────────────────────────────────────────
-   CARD TILT
-────────────────────────────────────────── */
+/* ── CARD TILT ── */
 document.querySelectorAll('.card, .pcard, .review').forEach(card => {
   card.addEventListener('mousemove', e => {
     const r = card.getBoundingClientRect();
@@ -136,7 +111,9 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
 });
 
 /* ════════════════════════════════════════════
-   THREE.JS GLOBE — detailed, gold connections
+   THREE.JS GLOBE — v2 FIXED
+   AdditiveBlending gegen gelben Blob,
+   dezentere Farben, rechts positioniert
 ════════════════════════════════════════════ */
 (function buildGlobe() {
   if (typeof THREE === 'undefined') { console.warn('Three.js missing'); return; }
@@ -149,8 +126,8 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
   renderer.setClearColor(0x000000, 0);
 
   const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
-  camera.position.set(0, 0, 3.8);
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+  camera.position.set(0, 0, 4.1);
 
   function resize() {
     const w = canvas.parentElement.offsetWidth;
@@ -162,7 +139,7 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
   resize();
   window.addEventListener('resize', resize);
 
-  /* ── Globe shader: continents via fbm noise ── */
+  /* ── Globe Shader ── */
   const globeVS = `
     varying vec3 vNormal;
     varying vec3 vWorldPos;
@@ -190,8 +167,8 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
     float noise(vec2 p) {
       vec2 i = floor(p), f = fract(p);
       vec2 u = f * f * (3.0 - 2.0 * f);
-      return mix(mix(hash(i),            hash(i+vec2(1,0)), u.x),
-                 mix(hash(i+vec2(0,1)),  hash(i+vec2(1,1)), u.x), u.y);
+      return mix(mix(hash(i),           hash(i+vec2(1,0)), u.x),
+                 mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), u.x), u.y);
     }
     float fbm(vec2 p) {
       float v = 0.0, a = 0.5;
@@ -218,11 +195,14 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
       vec2 uv = vUv;
       float land = continentMask(uv);
 
-      vec3 deepOcean    = vec3(0.02, 0.04, 0.09);
-      vec3 shallowOcean = vec3(0.05, 0.08, 0.14);
-      vec3 landDark     = vec3(0.09, 0.08, 0.05);
-      vec3 landMid      = vec3(0.14, 0.12, 0.07);
-      vec3 landHigh     = vec3(0.20, 0.17, 0.09);
+      /* Champagner-Gold Palette (dezenter) */
+      vec3 GOLD = vec3(0.72, 0.60, 0.20);
+
+      vec3 deepOcean    = vec3(0.015, 0.025, 0.055);
+      vec3 shallowOcean = vec3(0.035, 0.055, 0.095);
+      vec3 landDark     = vec3(0.075, 0.065, 0.040);
+      vec3 landMid      = vec3(0.115, 0.100, 0.055);
+      vec3 landHigh     = vec3(0.165, 0.140, 0.075);
 
       float oceanVar = fbm(uv * 6.0) * 0.5 + 0.5;
       vec3  oceanCol = mix(deepOcean, shallowOcean, oceanVar * 0.6);
@@ -232,33 +212,33 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
 
       vec3 baseCol = mix(oceanCol, landCol, step(0.45, land));
 
-      /* coast glow */
-      float eps = 0.004;
+      /* Küsten-Glow */
+      float eps  = 0.004;
       float grad = abs(continentMask(uv + vec2(eps,0.)) - land)
                  + abs(continentMask(uv + vec2(0.,eps)) - land);
-      baseCol += vec3(0.83, 0.69, 0.21) * clamp(grad * 8.0, 0.0, 1.0) * 0.25;
+      baseCol += GOLD * clamp(grad * 8.0, 0.0, 1.0) * 0.20;
 
-      /* gold grid */
-      float lw = 0.025;
+      /* Gold-Grid (dezent) */
+      float lw = 0.022;
       float grd  = max(step(1.0 - lw,       mod(uv.x * 36.0, 1.0)), step(1.0 - lw,       mod(uv.y * 18.0, 1.0)));
       float grdM = max(step(1.0 - lw * 1.6, mod(uv.x * 12.0, 1.0)), step(1.0 - lw * 1.6, mod(uv.y *  6.0, 1.0)));
-      baseCol += vec3(0.83, 0.69, 0.21) * max(grd * 0.10, grdM * 0.20) * (0.4 + 0.6 * (1.0 - land));
+      baseCol += GOLD * max(grd * 0.07, grdM * 0.14) * (0.4 + 0.6 * (1.0 - land));
 
-      /* scan pulse */
+      /* Scan-Puls */
       float pulse = sin(uv.y * 120.0 - uTime * 0.6) * 0.5 + 0.5;
-      baseCol += vec3(0.83, 0.69, 0.21) * pulse * 0.015 * (1.0 - land);
+      baseCol += GOLD * pulse * 0.010 * (1.0 - land);
 
-      /* key light */
+      /* Key Light */
       vec3 lightDir = normalize(vec3(1.4, 1.6, 2.0));
       float diff = max(dot(vNormal, lightDir), 0.0);
-      baseCol += vec3(0.70, 0.58, 0.22) * pow(diff, 28.0) * 0.45;
+      baseCol += vec3(0.55, 0.45, 0.18) * pow(diff, 28.0) * 0.35;
 
-      /* rim atmosphere */
+      /* Rim-Atmosphäre */
       vec3  viewDir = normalize(cameraPosition - vWorldPos);
       float rim = pow(1.0 - max(dot(vNormal, viewDir), 0.0), 2.8);
-      baseCol += vec3(0.83, 0.69, 0.21) * rim * 0.55;
+      baseCol += GOLD * rim * 0.40;
 
-      gl_FragColor = vec4(baseCol, 0.88 + rim * 0.12);
+      gl_FragColor = vec4(baseCol, 0.92 + rim * 0.08);
     }
   `;
 
@@ -271,7 +251,8 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
   const globe = new THREE.Mesh(new THREE.SphereGeometry(1.0, 128, 128), globeMat);
   scene.add(globe);
 
-  /* ── Atmosphere shells ── */
+  /* ── Atmosphäre — FIX: AdditiveBlending statt normalem Alpha
+     → verhindert die "gelbe Scheibe" auf iPad/Safari ── */
   function shell(radius, power, alpha) {
     return new THREE.Mesh(
       new THREE.SphereGeometry(radius, 64, 64),
@@ -283,28 +264,38 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
         fragmentShader: `
           varying vec3 vN; varying vec3 vP;
           void main(){
-            vec3 v=normalize(cameraPosition-vP);
-            float r=pow(1.-dot(vN,v),${power.toFixed(1)});
-            gl_FragColor=vec4(vec3(0.83,0.69,0.21),r*${alpha.toFixed(2)});
+            vec3 v = normalize(cameraPosition - vP);
+            float r = pow(clamp(1.0 - dot(vN, v), 0.0, 1.0), ${power.toFixed(1)});
+            gl_FragColor = vec4(vec3(0.72, 0.60, 0.20) * r * ${alpha.toFixed(2)}, 1.0);
           }
         `,
-        transparent: true, side: THREE.BackSide, depthWrite: false,
+        transparent: true,
+        blending: THREE.AdditiveBlending,   /* ← DER FIX */
+        side: THREE.BackSide,
+        depthWrite: false,
       })
     );
   }
-  scene.add(shell(1.10, 3.0, 0.28));
-  scene.add(shell(1.18, 5.0, 0.12));
+  const atmo1 = shell(1.08, 3.5, 0.45);
+  const atmo2 = shell(1.15, 6.0, 0.22);
+  scene.add(atmo1);
+  scene.add(atmo2);
 
-  /* ── Stars ── */
+  /* ── Sterne (dezenter) ── */
   const starGeo = new THREE.BufferGeometry();
-  const starArr = new Float32Array(2400 * 3);
+  const starArr = new Float32Array(1800 * 3);
   for (let i = 0; i < starArr.length; i++) starArr[i] = (Math.random() - .5) * 60;
   starGeo.setAttribute('position', new THREE.BufferAttribute(starArr, 3));
   scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({
-    color: 0xfff8e0, size: 0.028, transparent: true, opacity: 0.55
+    color: 0xd8cfa8,
+    size: 0.022,
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
   })));
 
-  /* ── Cities + arcs ── */
+  /* ── Städte + Bögen ── */
   function ll2v3(lat, lon, r) {
     const phi = (90 - lat) * Math.PI / 180;
     const th  = (lon + 180) * Math.PI / 180;
@@ -324,9 +315,9 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
   ];
   const cityVecs = cities.map(c => ll2v3(c[0], c[1], 1.012));
 
-  const nodeGeo  = new THREE.SphereGeometry(0.013, 8, 8);
-  const nodeMat  = new THREE.MeshBasicMaterial({ color: 0xf0d878 });
-  const pulseGeo = new THREE.RingGeometry(0.018, 0.034, 16);
+  const nodeGeo  = new THREE.SphereGeometry(0.012, 8, 8);
+  const nodeMat  = new THREE.MeshBasicMaterial({ color: 0xe8cc70 });
+  const pulseGeo = new THREE.RingGeometry(0.017, 0.032, 16);
   const pulseRings = [];
 
   cityVecs.forEach(pos => {
@@ -335,7 +326,13 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
     globe.add(dot);
 
     const ring = new THREE.Mesh(pulseGeo,
-      new THREE.MeshBasicMaterial({ color: 0xd4af37, transparent: true, side: THREE.DoubleSide }));
+      new THREE.MeshBasicMaterial({
+        color: 0xc9a227,
+        transparent: true,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      }));
     ring.position.copy(pos);
     ring.lookAt(new THREE.Vector3(0, 0, 0));
     ring.userData.phase = Math.random() * Math.PI * 2;
@@ -354,11 +351,17 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
     const p1  = cityVecs[a].clone();
     const p2  = cityVecs[b].clone();
     const mid = p1.clone().lerp(p2, .5).normalize()
-      .multiplyScalar(1.0 + .15 + p1.distanceTo(p2) * .22);
+      .multiplyScalar(1.0 + .13 + p1.distanceTo(p2) * .20);
     const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
     const line  = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints(curve.getPoints(64)),
-      new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: .2 })
+      new THREE.LineBasicMaterial({
+        color: 0xc9a227,
+        transparent: true,
+        opacity: .18,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
     );
     globe.add(line);
     return { line, curve, phase: Math.random() * Math.PI * 2 };
@@ -366,37 +369,60 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
 
   const packets = arcs.map(arc => {
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.009, 6, 6),
-      new THREE.MeshBasicMaterial({ color: 0xfff0a0, transparent: true })
+      new THREE.SphereGeometry(0.008, 6, 6),
+      new THREE.MeshBasicMaterial({
+        color: 0xf5e6a8,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
     );
     globe.add(mesh);
     return { mesh, curve: arc.curve, t: Math.random(), speed: .0018 + Math.random() * .0025 };
   });
 
   /* ── Lights ── */
-  scene.add(new THREE.AmbientLight(0xfff8e0, 0.20));
-  const sun = new THREE.DirectionalLight(0xffd080, 1.1);
+  scene.add(new THREE.AmbientLight(0xf5ebd0, 0.18));
+  const sun = new THREE.DirectionalLight(0xe8d090, 0.9);
   sun.position.set(4, 3, 3);
   scene.add(sun);
 
-  /* ── Mouse parallax ── */
+  /* ── Maus-Parallax ── */
   let mxT = 0, myT = 0, mx = 0, my = 0;
   document.addEventListener('mousemove', e => {
-    mxT = (e.clientX / innerWidth  - .5) * .4;
-    myT = (e.clientY / innerHeight - .5) * .25;
+    mxT = (e.clientX / innerWidth  - .5) * .35;
+    myT = (e.clientY / innerHeight - .5) * .22;
   });
 
-  function positionGlobe() {
-    if (innerWidth < 768) { globe.position.set(0, .2, 0); globe.scale.setScalar(.68); }
-    else                  { globe.position.set(1.65, 0, 0); globe.scale.setScalar(1); }
+  /* ── Position: rechts, überdeckt Text NICHT ── */
+  function layout() {
+    if (innerWidth < 768) {
+      /* mobil: klein, oben rechts, hinter Scrim */
+      globe.position.set(0.55, 0.85, -0.4);
+      globe.scale.setScalar(0.55);
+    } else if (innerWidth < 1100) {
+      globe.position.set(1.55, 0.1, -0.3);
+      globe.scale.setScalar(0.8);
+    } else {
+      globe.position.set(1.95, 0, 0);
+      globe.scale.setScalar(0.95);
+    }
+    /* Atmosphären folgen dem Globus */
+    atmo1.position.copy(globe.position);
+    atmo2.position.copy(globe.position);
+    atmo1.scale.copy(globe.scale);
+    atmo2.scale.copy(globe.scale);
   }
-  positionGlobe();
-  window.addEventListener('resize', positionGlobe);
+  layout();
+  window.addEventListener('resize', layout);
 
-  /* ── Intro scale-in of globe after preloader ── */
+  /* ── Intro-Scale nach Preloader ── */
+  const introTarget = () => innerWidth < 768 ? 0.55 : innerWidth < 1100 ? 0.8 : 0.95;
   globe.scale.setScalar(0.001);
+  atmo1.scale.setScalar(0.001);
+  atmo2.scale.setScalar(0.001);
   let introDone = false;
-  setTimeout(() => { introDone = true; }, 1200);
+  setTimeout(() => { introDone = true; }, 1300);
 
   let time = 0;
   function animate() {
@@ -404,39 +430,40 @@ document.querySelectorAll('.card, .pcard, .review').forEach(card => {
     time += 0.007;
 
     globeMat.uniforms.uTime.value = time;
-    globe.rotation.y = time * 0.09;
+    globe.rotation.y = time * 0.08;
 
-    /* intro grow */
     if (introDone) {
-      const targetScale = innerWidth < 768 ? .68 : 1;
+      const target = introTarget();
       const cur = globe.scale.x;
-      if (cur < targetScale - .001) {
-        const next = cur + (targetScale - cur) * .06;
+      if (cur < target - .001) {
+        const next = cur + (target - cur) * .05;
         globe.scale.setScalar(next);
+        atmo1.scale.setScalar(next);
+        atmo2.scale.setScalar(next);
       }
     }
 
     mx += (mxT - mx) * .04;
     my += (myT - my) * .04;
-    camera.position.x = mx * .6;
-    camera.position.y = -my * .4;
+    camera.position.x = mx * .5;
+    camera.position.y = -my * .35;
     camera.lookAt(globe.position);
 
     pulseRings.forEach(ring => {
       const v = Math.abs(Math.sin(time * 1.1 + ring.userData.phase));
-      ring.scale.setScalar(1 + .55 * v);
-      ring.material.opacity = .55 - .45 * v;
+      ring.scale.setScalar(1 + .5 * v);
+      ring.material.opacity = .5 - .42 * v;
     });
 
     arcs.forEach(arc => {
-      arc.line.material.opacity = .12 + .18 * (.5 + .5 * Math.sin(time * .9 + arc.phase));
+      arc.line.material.opacity = .10 + .16 * (.5 + .5 * Math.sin(time * .9 + arc.phase));
     });
 
     packets.forEach(p => {
       p.t += p.speed;
       if (p.t > 1) p.t = 0;
       p.mesh.position.copy(p.curve.getPoint(p.t));
-      p.mesh.material.opacity = Math.sin(p.t * Math.PI) * .9;
+      p.mesh.material.opacity = Math.sin(p.t * Math.PI) * .85;
     });
 
     renderer.render(scene, camera);
